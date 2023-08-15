@@ -1,0 +1,129 @@
+builds:
+- id: "with-upx-agent"
+  main: ./agent/agent.go
+  binary: stowaway_agent
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+  - arm
+  - "386"
+  goarm:
+  - "5"
+  - "6"
+  - "7"
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+  ignore:
+  - goos: darwin
+    goarch: arm64
+  - goos: darwin
+    goarch: arm
+  - goos: windows
+    goarch: arm64
+  - goos: windows
+    goarch: arm
+  hooks:
+    post: upx --best -f -q "{{ .Path }}"
+- id: "with-upx-agent-windows-nogui"
+  main: ./agent/agent.go
+  binary: stowaway_agent
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - windows
+  goarch:
+  - amd64
+  - "386"
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser -H=windowsgui
+  ignore:
+  - goos: windows
+    goarch: arm64
+  - goos: windows
+    goarch: arm
+  hooks:
+    post: upx --best -f -q "{{ .Path }}"
+- id: "with-upx-admin"
+  main: ./admin/admin.go
+  binary: stowaway_admin
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+  - arm
+  - "386"
+  goarm:
+  - "5"
+  - "6"
+  - "7"
+  ignore:
+  - goos: darwin
+    goarch: arm64
+  - goos: darwin
+    goarch: arm
+  - goos: darwin
+    goarch: "386"
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+  hooks:
+    post: upx --best -f -q "{{ .Path }}"
+- id: "with-upx-admin-windows"
+  main: ./admin/admin_win.go
+  binary: stowaway_admin
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - windows
+  goarch:
+  - amd64
+  - "386"
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+  hooks:
+    post: upx --best -f -q "{{ .Path }}"
+
+- id: "without-upx-agent-mipsle"
+  # UnknownExecutableFormatException
+
+  # CantPackException: can't pack new-exe
+  main: ./agent/agent.go
+  binary: stowaway_agent
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  goarch:
+  - mipsle
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
